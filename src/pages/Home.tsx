@@ -30,7 +30,7 @@ const Home = () => {
             transition={{ duration: 0.8 }}
           >
             <img
-              src="/LinkedInProfile.jfif"
+              src="/Portfolio/LinkedInProfile.jfif"
               alt="Johan Sebastián Hernández Arias"
               className="w-32 h-32 rounded-full mx-auto mb-8 object-cover ring-4 ring-purple-500 shadow-2xl"
             />
