@@ -10,7 +10,7 @@ import Resume from './pages/Resume';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Portfolio">
       <div className="relative min-h-screen bg-gray-50">
         <Navbar />
         <Routes>
