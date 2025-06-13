@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Minimize2, Bot, Loader2, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
 
 interface ChatMessage {
@@ -19,6 +20,7 @@ const ChatBot: React.FC = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate(); // <--- Inicialización del hook
   const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useHuggingFaceChat();
 
   useEffect(() => {
@@ -64,6 +66,30 @@ const ChatBot: React.FC = () => {
     setInput('');
     setIsTyping(true);
 
+    const lowerContent = content.toLowerCase();
+
+    if (lowerContent.includes('experiencia') || lowerContent.includes('currículum') || lowerContent.includes('cv')) {
+      console.log("INTENTANDO NAVEGAR A: /resume (vía texto directo)");
+      navigate('/resume');
+      console.log("NAVEGACIÓN A /resume EJECUTADA (vía texto directo).");
+      setIsTyping(false);
+      setIsMinimized(true);
+      return;
+    } else if (lowerContent.includes('proyecto') || lowerContent.includes('trabajos')) {
+      console.log("INTENTANDO NAVEGAR A: /projects (vía texto directo)");
+      navigate('/projects');
+      console.log("NAVEGACIÓN A /projects EJECUTADA (vía texto directo).");
+      setIsTyping(false);
+      setIsMinimized(true);
+      return;
+    } else if (lowerContent.includes('contacto') || lowerContent.includes('email') || lowerContent.includes('teléfono')) {
+      console.log("INTENTANDO NAVEGAR A: /contact (vía texto directo)");
+      navigate('/contact');
+      console.log("NAVEGACIÓN A /contact EJECUTADA (vía texto directo).");
+      setIsTyping(false);
+      setIsMinimized(true);
+      return;
+    }
     try {
       const response = await processMessage(content);
       
@@ -88,11 +114,34 @@ const ChatBot: React.FC = () => {
     } finally {
       setIsTyping(false);
     }
-  }, [addMessage, processMessage]);
+  }, [addMessage, processMessage, navigate, setIsMinimized]);
 
   const handleSuggestionClick = useCallback((suggestion: { text: string; action: string }) => {
-    handleSendMessage(suggestion.text);
-  }, [handleSendMessage]);
+    // Añade estos console.log para depurar
+    console.log("Sugerencia clicada:", suggestion.text, "Acción:", suggestion.action); 
+
+    // Lógica para navegar según la acción de la sugerencia
+    if (suggestion.action === 'experience') {
+      console.log("INTENTANDO NAVEGAR A: /resume (vía sugerencia)");
+      navigate('/resume');
+      console.log("NAVEGACIÓN A /resume EJECUTADA (vía sugerencia).");
+      setIsMinimized(true);
+    } else if (suggestion.action === 'projects') {
+      console.log("INTENTANDO NAVEGAR A: /projects (vía sugerencia)");
+      navigate('/projects');
+      console.log("NAVEGACIÓN A /projects EJECUTADA (vía sugerencia).");
+      setIsMinimized(true);
+    } else if (suggestion.action === 'contact') {
+      console.log("INTENTANDO NAVEGAR A: /contact (vía sugerencia)");
+      navigate('/contact');
+      console.log("NAVEGACIÓN A /contact EJECUTADA (vía sugerencia).");
+      setIsMinimized(true);
+    } else if (suggestion.action === 'skills' || suggestion.action === 'quantum_skills' || suggestion.action === 'automation' || suggestion.action === 'smartcad' || suggestion.action === 'pathoptimizer' || suggestion.action === 'email' || suggestion.action === 'phone' || suggestion.action === 'current_role') {
+      handleSendMessage(suggestion.text);
+    } else {
+      handleSendMessage(suggestion.text);
+    }
+  }, [navigate, handleSendMessage, setIsMinimized]); 
 
   const handleFeedback = useCallback((messageId: string, type: 'positive' | 'negative') => {
     setMessages(prev => prev.map(msg => 
