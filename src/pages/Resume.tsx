@@ -7,7 +7,7 @@ const Resume = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Currículum</h1>
         <a 
-          href="/Johan_CV_ES.pdf" 
+          href="/Portfolio/Johan_CV_ES.pdf" 
           download
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
