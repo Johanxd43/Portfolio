@@ -39,8 +39,8 @@ const Contact = () => {
                 <Mail className="h-6 w-6 text-blue-600 mr-3" />
                 <div>
                   <p className="text-gray-900 font-medium">Email</p>
-                  <a href="mailto:contact@example.com" className="text-gray-600 hover:text-blue-600">
-                    contact@example.com
+                  <a href="mailto:johan-willi@hotmail.com" className="text-gray-600 hover:text-blue-600">
+                    johan-willi@hotmail.com
                   </a>
                 </div>
               </div>
@@ -49,8 +49,8 @@ const Contact = () => {
                 <Phone className="h-6 w-6 text-blue-600 mr-3" />
                 <div>
                   <p className="text-gray-900 font-medium">Teléfono</p>
-                  <a href="tel:+1234567890" className="text-gray-600 hover:text-blue-600">
-                    +1 (234) 567-890
+                  <a href="tel:+34629903206" className="text-gray-600 hover:text-blue-600">
+                    (+34) 629903206
                   </a>
                 </div>
               </div>
@@ -59,7 +59,7 @@ const Contact = () => {
                 <MapPin className="h-6 w-6 text-blue-600 mr-3" />
                 <div>
                   <p className="text-gray-900 font-medium">Ubicación</p>
-                  <p className="text-gray-600">Madrid, España</p>
+                  <p className="text-gray-600">Donostia – San Sebastian, España</p>
                 </div>
               </div>
             </div>
