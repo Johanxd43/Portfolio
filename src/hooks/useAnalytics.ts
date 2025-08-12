@@ -28,7 +28,7 @@ export function useAnalytics() {
     }
   }, []);
 
-  const trackEvent = useCallback(async (eventName: string, data: any) => {
+  const trackEvent = useCallback(async (eventName: string, data: Record<string, unknown>) => {
     try {
       await analyticsService.trackEvent(eventName, data);
     } catch (err) {

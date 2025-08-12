@@ -1,6 +1,48 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { debounce } from '../components/ChatBot/utils/debounce';
 import { z } from 'zod';
+
+interface AnalyticsEvent {
+  id?: string;
+  event_name: string;
+  event_data: Record<string, unknown>;
+  timestamp: string;
+  user_id?: string;
+  session_id?: string;
+}
+
+interface MetricRecord {
+  metric_name: string;
+  value: number;
+  timestamp: string;
+}
+
+interface TimelineEntry {
+  date: string;
+  users: number;
+  files: number;
+  errors: number;
+  avgProcessingTime: number;
+}
+
+interface UserDistributionEntry {
+  type: string;
+  value: number;
+}
+
+interface RecentActivity {
+  id: string;
+  type: string;
+  user: string;
+  timestamp: string;
+  details: Record<string, unknown>;
+}
+
+interface DetailedMetrics {
+  timelineData: TimelineEntry[];
+  userDistribution: UserDistributionEntry[];
+  errorRate: number;
+}
 
 // Schema validation
 const eventSchema = z.object({
@@ -50,12 +92,12 @@ class Metrics {
 
 export class AnalyticsService {
   private static instance: AnalyticsService;
-  private events: any[] = [];
-  private supabase: any;
+  private events: AnalyticsEvent[] = [];
+  private supabase!: SupabaseClient;
   private refreshInterval: number = 5 * 60 * 1000; // 5 minutos
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
   private refreshTimer: NodeJS.Timeout | null = null;
-  private eventQueue: any[] = [];
+  private eventQueue: AnalyticsEvent[] = [];
   private readonly MAX_BATCH_SIZE = 100;
   private readonly MIN_BATCH_SIZE = 10;
   private currentBatchSize = 50;
@@ -84,7 +126,7 @@ export class AnalyticsService {
     Metrics.setQueueSize(queueLength);
   }
 
-  private async insertEventsBatch(batch: any[], attempt = 1): Promise<void> {
+  private async insertEventsBatch(batch: AnalyticsEvent[], attempt = 1): Promise<void> {
     const startTime = Date.now();
     try {
       const { error } = await this.supabase
@@ -154,7 +196,7 @@ export class AnalyticsService {
     this.cache.clear();
   }
 
-  private validateEvent(event: any): boolean {
+  private validateEvent(event: AnalyticsEvent): boolean {
     try {
       eventSchema.parse(event);
       return true;
@@ -203,27 +245,27 @@ export class AnalyticsService {
     }
   }
 
-  private getFromCache(key: string): any | null {
+  private getFromCache<T>(key: string): T | null {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < this.refreshInterval) {
-      return cached.data;
+      return cached.data as T;
     }
     return null;
   }
 
-  private setCache(key: string, data: any) {
+  private setCache(key: string, data: unknown) {
     this.cache.set(key, {
       data,
       timestamp: Date.now()
     });
   }
 
-  private processAnalyticsData(metrics: any[], events: any[]) {
+  private processAnalyticsData(metrics: MetricRecord[], events: AnalyticsEvent[]) {
     const activeUsers = metrics.find(m => m.metric_name === 'active_users')?.value || 0;
     const processedFiles = metrics.find(m => m.metric_name === 'processed_files')?.value || 0;
     const avgProcessingTime = metrics.find(m => m.metric_name === 'average_processing_time')?.value || 0;
 
-    const [timelineData, userDistribution, errorRate] = this.processDetailedMetrics(events);
+    const { timelineData, userDistribution, errorRate } = this.processDetailedMetrics(events);
 
     return {
       activeUsers,
@@ -237,16 +279,20 @@ export class AnalyticsService {
     };
   }
 
-  private processDetailedMetrics(events: any[]): [any[], any[], number] {
-    // Agrupar eventos por día
-    const groupedByDay = events.reduce((acc, event) => {
+  private processDetailedMetrics(events: AnalyticsEvent[]): DetailedMetrics {
+    const groupedByDay: Record<string, {
+      users: Set<string | undefined>;
+      files: number;
+      errors: number;
+      processingTime: number[];
+    }> = events.reduce((acc, event) => {
       const date = new Date(event.timestamp).toISOString().split('T')[0];
       if (!acc[date]) {
-        acc[date] = { 
-          users: new Set(), 
+        acc[date] = {
+          users: new Set(),
           files: 0,
           errors: 0,
-          processingTime: [] 
+          processingTime: []
         };
       }
       acc[date].users.add(event.user_id);
@@ -255,32 +301,37 @@ export class AnalyticsService {
         if (event.event_data?.error) {
           acc[date].errors++;
         }
-        if (event.event_data?.processing_time) {
+        if (typeof event.event_data?.processing_time === 'number') {
           acc[date].processingTime.push(event.event_data.processing_time);
         }
       }
       return acc;
-    }, {});
+    }, {} as Record<string, {
+      users: Set<string | undefined>;
+      files: number;
+      errors: number;
+      processingTime: number[];
+    }>);
 
-    const timelineData = Object.entries(groupedByDay).map(([date, data]) => ({
+    const timelineData: TimelineEntry[] = Object.entries(groupedByDay).map(([date, data]) => ({
       date,
-      users: (data as any).users.size,
-      files: (data as any).files,
-      errors: (data as any).errors,
-      avgProcessingTime: (data as any).processingTime.length > 0
-        ? (data as any).processingTime.reduce((a: number, b: number) => a + b, 0) / (data as any).processingTime.length
+      users: data.users.size,
+      files: data.files,
+      errors: data.errors,
+      avgProcessingTime: data.processingTime.length > 0
+        ? data.processingTime.reduce((a, b) => a + b, 0) / data.processingTime.length
         : 0
     }));
 
     const userDistribution = this.processUserDistribution(events);
     const errorRate = this.calculateErrorRate(events);
 
-    return [timelineData, userDistribution, errorRate];
+    return { timelineData, userDistribution, errorRate };
   }
 
-  private processUserDistribution(events: any[]) {
-    const userTypes = events.reduce((acc, event) => {
-      const type = event.event_data?.user_type || 'unknown';
+  private processUserDistribution(events: AnalyticsEvent[]): UserDistributionEntry[] {
+    const userTypes = events.reduce<Record<string, number>>((acc, event) => {
+      const type = (event.event_data.user_type as string) || 'unknown';
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {});
@@ -291,42 +342,42 @@ export class AnalyticsService {
     }));
   }
 
-  private calculateSuccessRate(events: any[]) {
+  private calculateSuccessRate(events: AnalyticsEvent[]): number {
     const processedEvents = events.filter(e => e.event_name === 'file_processed');
-    const successfulEvents = processedEvents.filter(e => e.event_data?.success);
+    const successfulEvents = processedEvents.filter(e => e.event_data.success);
     return processedEvents.length > 0
       ? (successfulEvents.length / processedEvents.length) * 100
       : 0;
   }
 
-  private calculateErrorRate(events: any[]) {
+  private calculateErrorRate(events: AnalyticsEvent[]): number {
     const processedEvents = events.filter(e => e.event_name === 'file_processed');
-    const errorEvents = processedEvents.filter(e => e.event_data?.error);
+    const errorEvents = processedEvents.filter(e => e.event_data.error);
     return processedEvents.length > 0
       ? (errorEvents.length / processedEvents.length) * 100
       : 0;
   }
 
-  private getRecentActivity(events: any[]) {
+  private getRecentActivity(events: AnalyticsEvent[]): RecentActivity[] {
     return events
       .slice(0, 10)
       .map(event => ({
-        id: event.id,
+        id: String(event.id),
         type: event.event_name,
-        user: event.user_id,
+        user: event.user_id ?? '',
         timestamp: event.timestamp,
         details: event.event_data
       }));
   }
 
-  async trackEvent(eventName: string, data: any) {
+  async trackEvent(eventName: string, data: Record<string, unknown>) {
     if (!this.supabase) {
       console.error('Supabase client not initialized');
       return;
     }
 
     try {
-      const event = {
+      const event: AnalyticsEvent = {
         event_name: eventName,
         event_data: data,
         timestamp: new Date().toISOString()

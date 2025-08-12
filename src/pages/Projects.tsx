@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, ExternalLink, Loader2, Network, Zap, Bot, ArrowRight, ChevronRight } from 'lucide-react';
+import { Github, ExternalLink, Loader2, Network, Zap, Bot, ChevronRight } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -101,7 +101,6 @@ const aiProjects: Project[] = [
 const Projects = () => {
   const [loading, setLoading] = useState(false);
   const [projects] = useState<Project[]>(aiProjects);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const launchDemo = async (projectId: string) => {
     try {

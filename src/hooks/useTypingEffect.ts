@@ -1,9 +1,11 @@
+import { useState, useRef, useEffect } from 'react';
+
 export function useTypingEffect(text: string, speed: number) {
   const [displayText, setDisplayText] = useState('');
   const frameRef = useRef<number>();
 
   useEffect(() => {
-    let start = performance.now();
+    const start = performance.now();
     let index = 0;
 
     const animate = (timestamp: number) => {
