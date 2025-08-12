@@ -28,12 +28,11 @@ interface AnalyticsData {
     type: string;
     user: string;
     timestamp: string;
-    details: any;
+    details: Record<string, unknown>;
   }>;
 }
 
 const AnalyticsDashboard: React.FC = () => {
-  const [selectedView, setSelectedView] = useState('overview');
   const { getAnalytics, isLoading, error } = useAnalytics();
   const [data, setData] = useState<AnalyticsData | null>(null);
 
@@ -73,7 +72,6 @@ const AnalyticsDashboard: React.FC = () => {
 
       <TabList
         defaultValue="overview"
-        onValueChange={value => setSelectedView(value)}
         className="mb-8"
       >
         <Tab value="overview" text="Vista General" />
