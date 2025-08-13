@@ -54,6 +54,7 @@ const Home = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-purple-400 transition-colors"
+              aria-label="GitHub"
             >
               <Github className="h-8 w-8" />
             </a>
@@ -62,12 +63,14 @@ const Home = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-purple-400 transition-colors"
+              aria-label="LinkedIn"
             >
               <Linkedin className="h-8 w-8" />
             </a>
             <a
               href="mailto:johan-willi@hotmail.com"
               className="text-gray-300 hover:text-purple-400 transition-colors"
+              aria-label="Correo electrónico"
             >
               <Mail className="h-8 w-8" />
             </a>
