@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import ChatBot from '../ChatBot';
 import { useHuggingFaceChat } from '../hooks/useHuggingFaceChat';
 
@@ -15,7 +16,7 @@ describe('ChatBot', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock por defecto del hook
-    (useHuggingFaceChat as jest.Mock).mockReturnValue({
+    (useHuggingFaceChat as vi.Mock).mockReturnValue({
       processMessage: vi.fn().mockResolvedValue({
         response: 'Test response',
         suggestions: [{ text: 'Test suggestion', action: 'test' }]
@@ -28,19 +29,27 @@ describe('ChatBot', () => {
   });
 
   it('should render loading state when not initialized', () => {
-    (useHuggingFaceChat as jest.Mock).mockReturnValue({
+    (useHuggingFaceChat as vi.Mock).mockReturnValue({
       isInitialized: false,
       isUsingFallback: false,
       isProcessing: false,
       error: null
     });
 
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
     expect(screen.getByText('Inicializando Nova...')).toBeInTheDocument();
   });
 
   it('should render welcome message initially', async () => {
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
     
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -55,7 +64,7 @@ describe('ChatBot', () => {
       suggestions: [{ text: 'Test', action: 'test' }]
     });
 
-    (useHuggingFaceChat as jest.Mock).mockReturnValue({
+    (useHuggingFaceChat as vi.Mock).mockReturnValue({
       processMessage: mockProcessMessage,
       isProcessing: false,
       error: null,
@@ -63,7 +72,11 @@ describe('ChatBot', () => {
       isUsingFallback: false
     });
 
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
 
     const input = screen.getByPlaceholderText('Escribe tu mensaje...');
     
@@ -82,7 +95,7 @@ describe('ChatBot', () => {
       suggestions: []
     });
 
-    (useHuggingFaceChat as jest.Mock).mockReturnValue({
+    (useHuggingFaceChat as vi.Mock).mockReturnValue({
       processMessage: mockProcessMessage,
       isProcessing: false,
       error: null,
@@ -90,20 +103,24 @@ describe('ChatBot', () => {
       isUsingFallback: false
     });
 
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
 
     await act(async () => {
-      const suggestionButton = await screen.findByText('Experiencia');
+      const suggestionButton = await screen.findByText('Habilidades');
       await user.click(suggestionButton);
     });
 
-    expect(mockProcessMessage).toHaveBeenCalledWith('Experiencia');
+    expect(mockProcessMessage).toHaveBeenCalledWith('Habilidades');
   });
 
   it('should show error message on failure', async () => {
     const mockProcessMessage = vi.fn().mockRejectedValue(new Error('Test error'));
 
-    (useHuggingFaceChat as jest.Mock).mockReturnValue({
+    (useHuggingFaceChat as vi.Mock).mockReturnValue({
       processMessage: mockProcessMessage,
       isProcessing: false,
       error: new Error('Test error'),
@@ -111,7 +128,11 @@ describe('ChatBot', () => {
       isUsingFallback: false
     });
 
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
 
     const input = screen.getByPlaceholderText('Escribe tu mensaje...');
     
@@ -124,7 +145,11 @@ describe('ChatBot', () => {
   });
 
   it('should handle minimize/maximize', async () => {
-    render(<ChatBot />);
+    render(
+      <MemoryRouter>
+        <ChatBot />
+      </MemoryRouter>
+    );
     
     await act(async () => {
       const minimizeButton = screen.getByLabelText('Minimizar chat');
