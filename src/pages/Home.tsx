@@ -1,8 +1,8 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail } from 'lucide-react';
-import Background from '../components/Background';
+const Background = React.lazy(() => import('../components/Background'));
 import ParticleField from '../components/ParticleField';
 import Timeline from '../components/Timeline';
 
@@ -15,11 +15,11 @@ const Home = () => {
       <div className="relative h-screen flex items-center justify-center">
         <div className="absolute inset-0">
           <ErrorBoundary>
-            <Canvas camera={{ position: [0, 0, 1] }}>
-              <Suspense fallback={null}>
+            <React.Suspense fallback={<div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-purple-900" />}>
+              <Canvas camera={{ position: [0, 0, 1] }}>
                 <Background />
-              </Suspense>
-            </Canvas>
+              </Canvas>
+            </React.Suspense>
           </ErrorBoundary>
         </div>
         
