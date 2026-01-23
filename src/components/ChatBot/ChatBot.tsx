@@ -1,9 +1,11 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle, Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
+import { useVoiceInput } from './hooks/useVoiceInput';
 import QuantumLoader from '../QuantumLoader';
+import AudioVisualizer from './AudioVisualizer';
 
 interface ChatMessage {
   id: string;
@@ -23,6 +25,16 @@ const ChatBot: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate(); // <--- Inicialización del hook
   const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useHuggingFaceChat();
+
+  const handleVoiceInput = useCallback((text: string) => {
+    setInput(text);
+    // Optional: auto-send
+    // handleSendMessage(text);
+  }, []);
+
+  const { isListening, isSupported, toggleListening } = useVoiceInput({
+    onTranscript: handleVoiceInput
+  });
 
   useEffect(() => {
     if (showWelcome) {
@@ -283,6 +295,7 @@ const ChatBot: React.FC = () => {
                   <div className="flex items-center space-x-2 text-cyan-400">
                     <QuantumLoader size={16} />
                     <span className="text-xs font-mono">Nova procesando...</span>
+                    <AudioVisualizer isActive={true} />
                   </div>
                 )}
               </div>
@@ -294,15 +307,34 @@ const ChatBot: React.FC = () => {
                   e.preventDefault();
                   handleSendMessage(input);
                 }}
-                className="flex gap-2"
+                className="flex gap-2 items-center"
               >
+                {isSupported && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    type="button"
+                    onClick={toggleListening}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isListening
+                        ? 'text-red-400 bg-red-900/20 animate-pulse'
+                        : 'text-cyan-400 hover:bg-cyan-900/20'
+                    }`}
+                    aria-label={isListening ? "Detener escucha" : "Activar micrófono"}
+                    title={isListening ? "Detener" : "Hablar"}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </motion.button>
+                )}
+
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu mensaje..."
+                  placeholder={isListening ? "Escuchando..." : "Escribe tu mensaje..."}
                   className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500"
                 />
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
