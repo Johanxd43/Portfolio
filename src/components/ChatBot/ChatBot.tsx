@@ -181,6 +181,7 @@ const ChatBot: React.FC = () => {
           className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full text-white hover:from-purple-700 hover:to-blue-700 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Abrir chat"
         >
           <MessageCircle className="h-5 w-5" />
         </motion.button>
@@ -305,6 +306,8 @@ const ChatBot: React.FC = () => {
                   type="submit"
                   className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors shadow-sm"
                   disabled={isTyping}
+                  aria-label="Enviar mensaje"
+                  title="Enviar mensaje"
                 >
                   <Send className="h-4 w-4" />
                 </motion.button>

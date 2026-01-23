@@ -49,6 +49,8 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-secondary-600 hover:bg-secondary-50 focus:outline-none"
+              aria-label="Main menu"
+              aria-expanded={isOpen}
             >
               <Menu className="h-6 w-6" />
             </button>
