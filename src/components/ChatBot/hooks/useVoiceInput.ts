@@ -35,6 +35,10 @@ export function useVoiceInput({ onTranscript }: UseVoiceInputProps) {
       };
 
       setRecognition(recognitionInstance);
+
+      return () => {
+        recognitionInstance.abort();
+      };
     }
   }, [onTranscript]);
 

@@ -20,6 +20,7 @@ interface Project {
     value: string;
   }[];
   integrations?: string[];
+  category?: 'ai' | 'quantum' | 'industrial';
 }
 
 const aiProjects: Project[] = [
@@ -267,7 +268,7 @@ const Projects = () => {
                           className="bg-gray-800/30 border border-gray-700/50 p-4 rounded-xl text-center transition-colors"
                         >
                           <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
-                            {metric.value}
+                            <CountUp value={metric.value} />
                           </div>
                           <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">{metric.label}</div>
                         </motion.div>
