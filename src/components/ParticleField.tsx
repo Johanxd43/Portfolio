@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 interface Particle {
@@ -6,42 +6,55 @@ interface Particle {
   y: number;
   size: number;
   color: string;
+  duration: number;
+  delay: number;
 }
 
 export default function ParticleField() {
   const generateParticles = useCallback((count: number): Particle[] => {
     const colors = [
-      'rgba(168, 85, 247, 0.4)', // secondary-500
-      'rgba(14, 165, 233, 0.4)', // primary-500
-      'rgba(20, 184, 166, 0.4)', // accent-500
+      '#8b5cf6', // purple-500
+      '#06b6d4', // cyan-500
+      '#ec4899', // pink-500
     ];
     
     return Array.from({ length: count }, () => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 4 + 1,
-      color: colors[Math.floor(Math.random() * colors.length)]
+      size: Math.random() * 2 + 1, // Smaller, sharper particles (1-3px)
+      color: colors[Math.floor(Math.random() * colors.length)],
+      duration: Math.random() * 2 + 1.5,
+      delay: Math.random() * 2
     }));
   }, []);
 
-  const particles = generateParticles(50);
+  const particles = useMemo(() => generateParticles(40), [generateParticles]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
       {particles.map((particle, index) => (
         <motion.div
           key={index}
-          className="absolute rounded-full"
+          className="absolute rounded-full shadow-[0_0_8px_rgba(139,92,246,0.3)]"
+          initial={{ opacity: 0, scale: 0 }}
           animate={{
-            x: [particle.x + '%', (particle.x + 10) + '%', particle.x + '%'],
-            y: [particle.y + '%', (particle.y + 10) + '%', particle.y + '%'],
+            opacity: [0.2, 0.8, 0.2],
+            scale: [1, 1.5, 1],
+            boxShadow: [
+              `0 0 4px ${particle.color}`,
+              `0 0 12px ${particle.color}`,
+              `0 0 4px ${particle.color}`
+            ]
           }}
           transition={{
-            duration: Math.random() * 3 + 2,
+            duration: particle.duration,
             repeat: Infinity,
+            delay: particle.delay,
             ease: "easeInOut"
           }}
           style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
             width: particle.size,
             height: particle.size,
             backgroundColor: particle.color,
