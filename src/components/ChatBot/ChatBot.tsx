@@ -1,8 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Minimize2, Bot, Loader2, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
+import QuantumLoader from '../QuantumLoader';
 
 interface ChatMessage {
   id: string;
@@ -156,7 +157,7 @@ const ChatBot: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="fixed bottom-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-full shadow-2xl flex items-center space-x-3"
       >
-        <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+        <QuantumLoader size={20} />
         <span className="text-sm text-gray-600">Inicializando Nova...</span>
       </motion.div>
     );
@@ -278,7 +279,7 @@ const ChatBot: React.FC = () => {
                 ))}
                 {isTyping && (
                   <div className="flex items-center space-x-2 text-gray-500">
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <QuantumLoader size={16} />
                     <span className="text-xs">Nova está escribiendo...</span>
                   </div>
                 )}
