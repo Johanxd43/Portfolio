@@ -8,7 +8,18 @@ import Timeline from '../components/Timeline';
 
 const Home = () => {
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-purple-900 text-white overflow-hidden">
+    <div className="relative min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
+      {/* Tech Grid Background */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `linear-gradient(#4f46e5 1px, transparent 1px), linear-gradient(90deg, #4f46e5 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/20 to-[#0a0a0f]" />
+
       <ParticleField />
       
       {/* Hero Section */}
@@ -49,31 +60,34 @@ const Home = () => {
             transition={{ delay: 0.5 }}
             className="flex justify-center space-x-6"
           >
-            <a
+            <motion.a
+              whileHover={{ scale: 1.1, color: '#22d3ee', textShadow: '0 0 8px #22d3ee' }}
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-300 hover:text-purple-400 transition-colors"
+              className="text-gray-400 transition-colors"
               aria-label="GitHub"
             >
               <Github className="h-8 w-8" />
-            </a>
-            <a
+            </motion.a>
+            <motion.a
+              whileHover={{ scale: 1.1, color: '#22d3ee', textShadow: '0 0 8px #22d3ee' }}
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-300 hover:text-purple-400 transition-colors"
+              className="text-gray-400 transition-colors"
               aria-label="LinkedIn"
             >
               <Linkedin className="h-8 w-8" />
-            </a>
-            <a
+            </motion.a>
+            <motion.a
+              whileHover={{ scale: 1.1, color: '#22d3ee', textShadow: '0 0 8px #22d3ee' }}
               href="mailto:johan-willi@hotmail.com"
-              className="text-gray-300 hover:text-purple-400 transition-colors"
+              className="text-gray-400 transition-colors"
               aria-label="Correo electrónico"
             >
               <Mail className="h-8 w-8" />
-            </a>
+            </motion.a>
           </motion.div>
         </div>
       </div>
