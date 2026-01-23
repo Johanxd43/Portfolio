@@ -5,6 +5,7 @@ import { Github, Linkedin, Mail } from 'lucide-react';
 const Background = React.lazy(() => import('../components/Background'));
 import ParticleField from '../components/ParticleField';
 import Timeline from '../components/Timeline';
+import DecryptedText from '../components/DecryptedText';
 
 const Home = () => {
   return (
@@ -45,10 +46,14 @@ const Home = () => {
               alt="Johan Sebastián Hernández Arias"
               className="w-32 h-32 rounded-full mx-auto mb-8 object-cover ring-4 ring-purple-500 shadow-2xl"
             />
-            <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-              Johan Sebastián Hernández Arias
-            </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            <div className="h-16 mb-4 flex items-center justify-center">
+              <h1 className="sr-only">Johan Sebastián Hernández Arias</h1>
+              <DecryptedText
+                text="Johan Sebastián Hernández Arias"
+                className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500"
+              />
+            </div>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto relative z-20">
               Ingeniero en Mecatrónica especializado en Computación Cuántica, Desarrollo de Software y Automatización Industrial. 
               Creando soluciones innovadoras que combinan hardware y software.
             </p>

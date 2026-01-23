@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,13 +34,18 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  isActive(item.path)
-                    ? 'text-white bg-gradient-to-r from-secondary-500 to-primary-500'
-                    : 'text-gray-600 hover:text-secondary-600 hover:bg-secondary-50'
-                }`}
               >
-                {item.label}
+                <motion.div
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                    isActive(item.path)
+                      ? 'text-white bg-gradient-to-r from-secondary-500 to-primary-500'
+                      : 'text-gray-600 hover:text-secondary-600 hover:bg-secondary-50'
+                  }`}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {item.label}
+                </motion.div>
               </Link>
             ))}
           </div>

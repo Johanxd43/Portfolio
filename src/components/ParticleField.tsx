@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 interface Particle {
@@ -28,7 +28,7 @@ export default function ParticleField() {
     }));
   }, []);
 
-  const particles = generateParticles(40); // Fewer particles for cleaner look
+  const particles = useMemo(() => generateParticles(40), [generateParticles]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
