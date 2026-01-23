@@ -28,14 +28,14 @@ const ChatBot: React.FC = () => {
     if (showWelcome) {
       const welcomeMessage: ChatMessage = {
         id: 'welcome',
-        content: "¡Hola! 👋 Soy Nova, tu asistente virtual. Estoy aquí para ayudarte a explorar el portafolio.\n\nPuedo informarte sobre:\n• 💼 Experiencia profesional\n• 🚀 Proyectos destacados\n• 💡 Habilidades técnicas\n• 📬 Información de contacto",
+        content: "¡Hola! 👋 Soy Nova, tu asistente de inteligencia artificial.\n\nEstoy conectado a la base de conocimiento de Johan Sebastián para responder preguntas sobre:\n• ⚛️ Computación Cuántica\n• 🏭 Automatización Industrial\n• 💻 Desarrollo de Software\n\n¿En qué puedo ayudarte hoy?",
         isUser: false,
         timestamp: new Date(),
         suggestions: [
-          { text: "Experiencia", action: "experience" },
-          { text: "Proyectos", action: "projects" },
-          { text: "Habilidades", action: "skills" },
-          { text: "Contacto", action: "contact" }
+          { text: "Ver proyectos Quantum", action: "projects" },
+          { text: "¿Experiencia en IA?", action: "experience" },
+          { text: "Stack tecnológico", action: "skills" },
+          { text: "Contactar", action: "contact" }
         ]
       };
       setMessages([welcomeMessage]);
