@@ -40,7 +40,13 @@ export default function Timeline() {
   return (
     <div className="relative max-w-6xl mx-auto">
       {/* Línea central */}
-      <div className="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gradient-to-b from-purple-400 to-blue-500"></div>
+      <div className="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gradient-to-b from-purple-500/20 to-cyan-500/20">
+        <motion.div
+          className="h-32 w-full bg-gradient-to-b from-transparent via-cyan-400 to-transparent absolute top-0"
+          animate={{ top: ['0%', '100%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
       
       {timelineData.map((item, index) => (
         <motion.div
@@ -54,29 +60,35 @@ export default function Timeline() {
             {/* Contenido */}
             <div className={`w-5/12 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8'}`}>
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white p-6 rounded-lg shadow-xl border-l-4 border-purple-500"
+                whileHover={{ scale: 1.02, borderColor: 'rgba(34, 211, 238, 0.6)' }}
+                className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg border border-purple-500/30 hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] transition-all group"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className={`text-xl font-bold text-purple-600 ${index % 2 === 0 ? 'ml-auto' : ''}`}>
+                  <h3 className={`text-xl font-bold font-mono text-cyan-400 ${index % 2 === 0 ? 'ml-auto' : ''}`}>
                     {item.year}
                   </h3>
-                  <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                    item.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                  <span className={`px-2 py-1 text-xs rounded-full font-mono font-medium border ${
+                    item.status === 'completed'
+                      ? 'bg-green-900/20 text-green-400 border-green-500/30'
+                      : 'bg-blue-900/20 text-blue-400 border-blue-500/30'
                   }`}>
-                    {item.status === 'completed' ? 'Completado' : 'En curso'}
+                    {item.status === 'completed' ? 'COMPLETED' : 'ACTIVE'}
                   </span>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-1">{item.title}</h4>
-                <p className="text-sm text-gray-600 mb-2 font-medium">{item.company}</p>
-                <p className="text-xs text-gray-500 mb-3">{item.period}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                <h4 className="text-lg font-semibold text-gray-100 mb-1">{item.title}</h4>
+                <p className="text-sm text-purple-300 mb-2 font-medium">{item.company}</p>
+                <p className="text-xs text-gray-500 mb-3 font-mono uppercase tracking-wider">{item.period}</p>
+                <p className="text-gray-400 text-sm leading-relaxed">{item.description}</p>
               </motion.div>
             </div>
             
             {/* Punto central */}
             <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full bg-purple-500 shadow-lg border-2 border-white"></div>
+              <motion.div
+                className="w-4 h-4 rounded-full bg-[#0a0a0f] border-2 border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)] z-10"
+                whileInView={{ scale: [1, 1.2, 1], boxShadow: ['0 0 10px rgba(6,182,212,0.5)', '0 0 20px rgba(168,85,247,0.5)', '0 0 10px rgba(6,182,212,0.5)'] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </div>
             
             {/* Espacio opuesto */}
