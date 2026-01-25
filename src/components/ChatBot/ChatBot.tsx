@@ -1,8 +1,11 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Minimize2, Bot, Loader2, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle, Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
+import { useVoiceInput } from './hooks/useVoiceInput';
+import QuantumLoader from '../QuantumLoader';
+import AudioVisualizer from './AudioVisualizer';
 
 interface ChatMessage {
   id: string;
@@ -23,18 +26,28 @@ const ChatBot: React.FC = () => {
   const navigate = useNavigate(); // <--- Inicialización del hook
   const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useHuggingFaceChat();
 
+  const handleVoiceInput = useCallback((text: string) => {
+    setInput(text);
+    // Optional: auto-send
+    // handleSendMessage(text);
+  }, []);
+
+  const { isListening, isSupported, toggleListening } = useVoiceInput({
+    onTranscript: handleVoiceInput
+  });
+
   useEffect(() => {
     if (showWelcome) {
       const welcomeMessage: ChatMessage = {
         id: 'welcome',
-        content: "¡Hola! 👋 Soy Nova, tu asistente virtual. Estoy aquí para ayudarte a explorar el portafolio.\n\nPuedo informarte sobre:\n• 💼 Experiencia profesional\n• 🚀 Proyectos destacados\n• 💡 Habilidades técnicas\n• 📬 Información de contacto",
+        content: "¡Hola! 👋 Soy Nova, tu asistente de inteligencia artificial.\n\nEstoy conectado a la base de conocimiento de Johan Sebastián para responder preguntas sobre:\n• ⚛️ Computación Cuántica\n• 🏭 Automatización Industrial\n• 💻 Desarrollo de Software\n\n¿En qué puedo ayudarte hoy?",
         isUser: false,
         timestamp: new Date(),
         suggestions: [
-          { text: "Experiencia", action: "experience" },
-          { text: "Proyectos", action: "projects" },
-          { text: "Habilidades", action: "skills" },
-          { text: "Contacto", action: "contact" }
+          { text: "Ver proyectos Quantum", action: "projects" },
+          { text: "¿Experiencia en IA?", action: "experience" },
+          { text: "Stack tecnológico", action: "skills" },
+          { text: "Contactar", action: "contact" }
         ]
       };
       setMessages([welcomeMessage]);
@@ -154,10 +167,10 @@ const ChatBot: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-full shadow-2xl flex items-center space-x-3"
+        className="fixed bottom-4 right-4 bg-gray-900/90 backdrop-blur-sm p-4 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.3)] flex items-center space-x-3 border border-purple-500/30"
       >
-        <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-        <span className="text-sm text-gray-600">Inicializando Nova...</span>
+        <QuantumLoader size={20} />
+        <span className="text-sm text-gray-300">Inicializando Nova...</span>
       </motion.div>
     );
   }
@@ -166,41 +179,44 @@ const ChatBot: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`fixed bottom-4 right-4 bg-white shadow-2xl flex items-center transition-all duration-300 z-[999999] ${
+      className={`fixed bottom-4 right-4 flex items-center transition-all duration-300 z-[999999] ${
         isMinimized 
           ? 'w-auto rounded-full' 
-          : 'w-80 h-[500px] rounded-[20px] flex-col backdrop-blur-sm bg-white/95'
+          : 'w-80 h-[500px] rounded-[20px] flex-col backdrop-blur-md bg-gray-900/95 border border-purple-500/30'
       }`}
       style={{
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+        boxShadow: isMinimized
+          ? '0 0 15px rgba(139, 92, 246, 0.5)'
+          : '0 8px 32px rgba(0, 0, 0, 0.5)'
       }}
     >
       {isMinimized ? (
         <motion.button
           onClick={() => setIsMinimized(false)}
-          className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full text-white hover:from-purple-700 hover:to-blue-700 transition-colors"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-white shadow-lg"
+          whileHover={{ scale: 1.1, y: -5 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Abrir chat"
         >
-          <MessageCircle className="h-5 w-5" />
+          <MessageCircle className="h-6 w-6" />
         </motion.button>
       ) : (
         <>
-          <div className="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-t-[20px] flex justify-between items-center w-full">
+          <div className="px-4 py-3 bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-t-[20px] flex justify-between items-center w-full border-b border-purple-500/20">
             <div className="flex items-center space-x-2">
-              <div className="p-1.5 bg-white/10 rounded-full">
-                <Bot className="h-4 w-4 text-white" />
+              <div className="p-1.5 bg-purple-500/20 rounded-full border border-purple-500/30">
+                <Bot className="h-4 w-4 text-cyan-300" />
               </div>
               <div className="flex flex-col">
-                <h2 className="text-base font-semibold text-white">Nova</h2>
+                <h2 className="text-base font-semibold text-gray-100">Nova</h2>
                 {isUsingFallback && (
-                  <span className="text-[10px] text-white/80">Modo básico</span>
+                  <span className="text-[10px] text-gray-400">Modo básico</span>
                 )}
               </div>
             </div>
             <button
               onClick={() => setIsMinimized(true)}
-              className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
               aria-label="Minimizar chat"
             >
               <Minimize2 className="h-4 w-4" />
@@ -210,7 +226,7 @@ const ChatBot: React.FC = () => {
           <div className="flex-1 flex flex-col">
             <div 
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+              className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-900/50 scrollbar-track-transparent"
               style={{ maxHeight: 'calc(500px - 120px)' }}
             >
               <div className="p-4 space-y-4">
@@ -224,10 +240,10 @@ const ChatBot: React.FC = () => {
                     <div className={`max-w-[85%] space-y-2`}>
                       <div className={`rounded-xl p-3 shadow-sm ${
                         message.isUser
-                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                          : 'bg-gray-100/80 backdrop-blur-sm text-gray-900'
+                          ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white'
+                          : 'bg-gray-800/80 text-gray-200 border border-gray-700'
                       }`}>
-                        <p className="whitespace-pre-line leading-relaxed text-sm">{message.content}</p>
+                        <p className="whitespace-pre-line leading-relaxed text-sm font-light">{message.content}</p>
                       </div>
 
                       {!message.isUser && (
@@ -236,8 +252,8 @@ const ChatBot: React.FC = () => {
                             onClick={() => handleFeedback(message.id, 'positive')}
                             className={`p-1 rounded-full transition-all ${
                               message.feedback === 'positive' 
-                                ? 'text-green-600 bg-green-100 scale-110' 
-                                : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                                ? 'text-green-400 bg-green-900/30 scale-110'
+                                : 'text-gray-500 hover:text-green-400 hover:bg-green-900/20'
                             }`}
                             aria-label="Respuesta útil"
                           >
@@ -247,8 +263,8 @@ const ChatBot: React.FC = () => {
                             onClick={() => handleFeedback(message.id, 'negative')}
                             className={`p-1 rounded-full transition-all ${
                               message.feedback === 'negative' 
-                                ? 'text-red-600 bg-red-100 scale-110' 
-                                : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                                ? 'text-red-400 bg-red-900/30 scale-110'
+                                : 'text-gray-500 hover:text-red-400 hover:bg-red-900/20'
                             }`}
                             aria-label="Respuesta no útil"
                           >
@@ -265,7 +281,7 @@ const ChatBot: React.FC = () => {
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => handleSuggestionClick(suggestion)}
-                              className="px-3 py-1 bg-white border border-gray-200 text-gray-800 rounded-full text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                              className="px-3 py-1 bg-gray-800 border border-purple-500/30 text-cyan-300 rounded-full text-xs font-medium hover:bg-gray-700 hover:border-cyan-400 transition-all shadow-[0_0_10px_rgba(139,92,246,0.1)]"
                             >
                               {suggestion.text}
                             </motion.button>
@@ -276,35 +292,57 @@ const ChatBot: React.FC = () => {
                   </motion.div>
                 ))}
                 {isTyping && (
-                  <div className="flex items-center space-x-2 text-gray-500">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="text-xs">Nova está escribiendo...</span>
+                  <div className="flex items-center space-x-2 text-cyan-400">
+                    <QuantumLoader size={16} />
+                    <span className="text-xs font-mono">Nova procesando...</span>
+                    <AudioVisualizer isActive={true} />
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="p-3 border-t border-gray-100">
+            <div className="p-3 border-t border-gray-800 bg-gray-900/50">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage(input);
                 }}
-                className="flex gap-2"
+                className="flex gap-2 items-center"
               >
+                {isSupported && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    type="button"
+                    onClick={toggleListening}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isListening
+                        ? 'text-red-400 bg-red-900/20 animate-pulse'
+                        : 'text-cyan-400 hover:bg-cyan-900/20'
+                    }`}
+                    aria-label={isListening ? "Detener escucha" : "Activar micrófono"}
+                    title={isListening ? "Detener" : "Hablar"}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </motion.button>
+                )}
+
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu mensaje..."
-                  className="flex-1 px-3 py-2 bg-gray-100/80 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500"
+                  placeholder={isListening ? "Escuchando..." : "Escribe tu mensaje..."}
+                  className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500"
                 />
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="submit"
-                  className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors shadow-sm"
+                  className="p-2 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:from-purple-500 hover:to-cyan-500 transition-colors shadow-lg"
                   disabled={isTyping}
+                  aria-label="Enviar mensaje"
+                  title="Enviar mensaje"
                 >
                   <Send className="h-4 w-4" />
                 </motion.button>

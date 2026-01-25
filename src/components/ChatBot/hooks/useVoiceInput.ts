@@ -1,57 +1,70 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-export function useVoiceInput() {
+interface UseVoiceInputProps {
+  onTranscript: (text: string) => void;
+}
+
+export function useVoiceInput({ onTranscript }: UseVoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [isSupported, setIsSupported] = useState(false);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
-  const startListening = useCallback(() => {
-    if (!('webkitSpeechRecognition' in window)) {
-      console.warn('Speech recognition not supported');
-      return;
-    }
-
-    try {
-      const SpeechRecognition = window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      setIsSupported(true);
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
       
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'es-ES';
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'es-ES';
 
-      recognition.onstart = () => setIsListening(true);
-      recognition.onend = () => setIsListening(false);
-      
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        
-        setTranscript(transcript);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
+      recognitionInstance.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        onTranscript(transcript);
         setIsListening(false);
       };
 
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (error) {
-      console.error('Error initializing speech recognition:', error);
+      recognitionInstance.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+
+      return () => {
+        recognitionInstance.abort();
+      };
     }
-  }, []);
+  }, [onTranscript]);
+
+  const startListening = useCallback(() => {
+    if (recognition && !isListening) {
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+      }
+    }
+  }, [recognition, isListening]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (recognition && isListening) {
+      recognition.stop();
+      setIsListening(false);
     }
-  }, []);
+  }, [recognition, isListening]);
 
   return {
     isListening,
-    transcript,
+    isSupported,
     startListening,
-    stopListening
+    stopListening,
+    toggleListening: isListening ? stopListening : startListening
   };
 }
