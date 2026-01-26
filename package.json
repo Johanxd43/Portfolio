@@ -26,6 +26,7 @@
     "@tremor/react": "^3.14.1",
     "framer-motion": "^11.0.8",
     "lucide-react": "^0.344.0",
+    "maath": "^0.10.8",
     "prom-client": "^15.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -35,6 +36,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -48,6 +50,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "globals": "^17.1.0",
     "jsdom": "^24.0.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
