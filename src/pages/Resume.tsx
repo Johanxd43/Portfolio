@@ -2,6 +2,7 @@ import React from 'react';
 import { Download, Briefcase, GraduationCap, Award, MapPin, Mail, Phone } from 'lucide-react';
 import DecryptedText from '../components/DecryptedText';
 import TerminalBreadcrumbs from '../components/TerminalBreadcrumbs';
+import SkillsUniverse from '../components/SkillsUniverse';
 
 const Resume = () => {
   return (
@@ -125,12 +126,16 @@ const Resume = () => {
         </div>
       </section>
 
-      <section>
+      <section className="mb-12">
         <div className="flex items-center mb-6">
           <Award className="h-6 w-6 text-purple-400 mr-3" />
           <h2 className="text-2xl font-bold text-gray-200">Habilidades y Competencias</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* 3D Skills Cloud */}
+        <SkillsUniverse />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           <div className="bg-gray-900/50 border border-gray-800 p-4 rounded-lg hover:border-purple-500/50 transition-colors">
             <h3 className="font-semibold text-cyan-300 mb-2">Computación Cuántica</h3>
             <p className="text-gray-400 text-sm">Python, D-Wave Ocean SDK, Qiskit, SciPy, Algoritmos de Optimización</p>

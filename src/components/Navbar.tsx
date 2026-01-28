@@ -41,10 +41,6 @@ const Navbar = () => {
                     isActive(item.path)
                       ? 'text-white bg-white/10 shadow-[0_0_10px_rgba(139,92,246,0.3)] border border-purple-500/30'
                       : 'text-gray-400 hover:text-cyan-300 hover:bg-white/5'
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'text-white bg-gradient-to-r from-secondary-500 to-primary-500'
-                      : 'text-gray-600 hover:text-secondary-600 hover:bg-secondary-50'
                   }`}
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
@@ -60,7 +56,6 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-cyan-300 hover:bg-white/5 focus:outline-none"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-secondary-600 hover:bg-secondary-50 focus:outline-none"
               aria-label="Main menu"
               aria-expanded={isOpen}
             >

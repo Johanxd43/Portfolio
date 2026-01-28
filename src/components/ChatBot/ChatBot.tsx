@@ -6,10 +6,6 @@ import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
 import { useVoiceInput } from './hooks/useVoiceInput';
 import QuantumLoader from '../QuantumLoader';
 import AudioVisualizer from './AudioVisualizer';
-import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
-import QuantumLoader from '../QuantumLoader';
 
 interface ChatMessage {
   id: string;
@@ -174,7 +170,7 @@ const ChatBot: React.FC = () => {
         className="fixed bottom-4 right-4 bg-gray-900/90 backdrop-blur-sm p-4 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.3)] flex items-center space-x-3 border border-purple-500/30"
       >
         <QuantumLoader size={20} />
-        <span className="text-sm text-gray-600">Inicializando Nova...</span>
+        <span className="text-sm text-gray-300">Inicializando Nova...</span>
       </motion.div>
     );
   }
@@ -198,7 +194,6 @@ const ChatBot: React.FC = () => {
         <motion.button
           onClick={() => setIsMinimized(false)}
           className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-white shadow-lg"
-          className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full text-white hover:from-purple-700 hover:to-blue-700 transition-colors"
           whileHover={{ scale: 1.1, y: -5 }}
           whileTap={{ scale: 0.9 }}
           aria-label="Abrir chat"
@@ -301,9 +296,6 @@ const ChatBot: React.FC = () => {
                     <QuantumLoader size={16} />
                     <span className="text-xs font-mono">Nova procesando...</span>
                     <AudioVisualizer isActive={true} />
-                  <div className="flex items-center space-x-2 text-gray-500">
-                    <QuantumLoader size={16} />
-                    <span className="text-xs">Nova está escribiendo...</span>
                   </div>
                 )}
               </div>
