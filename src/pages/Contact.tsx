@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import DecryptedText from '../components/DecryptedText';
 import TerminalBreadcrumbs from '../components/TerminalBreadcrumbs';
+import { useToast } from '../context/ToastContext';
 
 const Contact = () => {
+  const { success } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,7 +15,16 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+    // Simulamos un envío exitoso
+    setTimeout(() => {
+      success("¡Mensaje enviado correctamente! Te contactaré pronto.");
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    }, 500);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

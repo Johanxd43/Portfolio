@@ -4,6 +4,7 @@ import { Github, ExternalLink, Loader2 } from 'lucide-react';
 import DecryptedText from '../components/DecryptedText';
 import TerminalBreadcrumbs from '../components/TerminalBreadcrumbs';
 import CountUp from '../components/CountUp';
+import { useToast } from '../context/ToastContext';
 
 interface Project {
   id: string;
@@ -106,6 +107,7 @@ const aiProjects: Project[] = [
 ];
 
 const Projects = () => {
+  const { info, error } = useToast();
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'quantum' | 'ai' | 'industrial'>('all');
   const [projects] = useState<Project[]>(aiProjects);
@@ -115,10 +117,12 @@ const Projects = () => {
   const launchDemo = async (projectId: string) => {
     try {
       setLoading(true);
-      // Preparado para futura integración con sistema de demos
-      console.log(`Launching demo for ${projectId}`);
-    } catch (error) {
-      console.error('Error launching demo:', error);
+      // Simulación de carga de demo
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      info(`Iniciando entorno de demostración para ${projectId}...`);
+    } catch (err) {
+      console.error('Error launching demo:', err);
+      error("Error al iniciar la demo. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
