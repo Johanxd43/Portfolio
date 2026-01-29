@@ -110,11 +110,11 @@ describe('ChatBot', () => {
     );
 
     await act(async () => {
-      const suggestionButton = await screen.findByText('Habilidades');
+      const suggestionButton = await screen.findByText('Stack tecnológico');
       await user.click(suggestionButton);
     });
 
-    expect(mockProcessMessage).toHaveBeenCalledWith('Habilidades');
+    expect(mockProcessMessage).toHaveBeenCalledWith('Stack tecnológico');
   });
 
   it('should show error message on failure', async () => {
