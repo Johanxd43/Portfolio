@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface Skill {
@@ -23,6 +23,8 @@ const skills: Skill[] = [
 ];
 
 const SkillsUniverse = () => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const getPosition = (index: number, total: number) => {
     const phi = Math.acos(-1 + (2 * index) / total);
     const theta = Math.sqrt(total * Math.PI) * phi;
@@ -36,11 +38,18 @@ const SkillsUniverse = () => {
   };
 
   return (
-    <div className="relative w-full h-[400px] flex items-center justify-center perspective-1000">
+    <div
+      className="relative w-full h-[400px] flex items-center justify-center perspective-1000"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <motion.div
         className="relative w-[300px] h-[300px] preserve-3d"
-        animate={{ rotateY: 360, rotateX: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        animate={isHovered ? { rotateY: 0, rotateX: 0 } : { rotateY: 360, rotateX: 360 }}
+        transition={isHovered
+          ? { duration: 0.5, ease: "easeOut" }
+          : { duration: 30, repeat: Infinity, ease: "linear" }
+        }
         style={{ transformStyle: 'preserve-3d' }}
       >
         {skills.map((skill, index) => {
@@ -59,8 +68,12 @@ const SkillsUniverse = () => {
               }}
             >
               <div
-                className="px-3 py-1 rounded-full text-xs font-bold text-white bg-black/50 border backdrop-blur-sm shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-default hover:scale-125 transition-transform"
-                style={{ borderColor: color, boxShadow: `0 0 5px ${color}` }}
+                className="px-3 py-1 rounded-full text-xs font-bold text-white bg-black/50 border backdrop-blur-sm shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-default transition-transform"
+                style={{
+                  borderColor: color,
+                  boxShadow: `0 0 5px ${color}`,
+                  transform: isHovered ? 'scale(1.1)' : 'scale(1)'
+                }}
               >
                 {skill.name}
               </div>
