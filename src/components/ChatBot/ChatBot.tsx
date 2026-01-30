@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle, Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
+import { useOpenRouter } from './hooks/useOpenRouter';
 import { useVoiceInput } from './hooks/useVoiceInput';
 import QuantumLoader from '../QuantumLoader';
 import AudioVisualizer from './AudioVisualizer';
@@ -24,7 +24,7 @@ const ChatBot: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate(); // <--- Inicialización del hook
-  const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useHuggingFaceChat();
+  const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useOpenRouter();
 
   const handleVoiceInput = useCallback((text: string) => {
     setInput(text);
