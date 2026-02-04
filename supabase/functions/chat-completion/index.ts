@@ -1,18 +1,15 @@
-import { serve } from 'https://deno.land/std@0.201.0/http/server.ts';
-
-interface ChatMessage {
-  role: string;
-  content: string;
-}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 
 interface ChatRequest {
-  messages: ChatMessage[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messages: any[];
   systemPrompt?: string;
 }
 
 console.info('chat-completion function starting');
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -20,7 +17,7 @@ serve(async (req: Request) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     });
   }
@@ -32,8 +29,7 @@ serve(async (req: Request) => {
   let body: ChatRequest;
   try {
     body = await req.json();
-  } catch (err) {
-    console.error(err);
+  } catch {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
@@ -48,23 +44,16 @@ serve(async (req: Request) => {
   }
 
   // Build payload for OpenRouter
-  // We use the messages array directly since the frontend now includes the system prompt there.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payload: any = {
     model: 'meta-llama/llama-3-8b-instruct:free',
     messages,
   };
-
-  // Only add system_prompt separately if it's NOT already in messages
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hasSystemMessage = messages.some((msg: any) => msg.role === 'system');
-  if (systemPrompt && !hasSystemMessage) {
-      payload.messages = [{ role: 'system', content: systemPrompt }, ...messages];
-  }
+  if (systemPrompt) payload.system_prompt = systemPrompt;
 
   try {
     const referer = req.headers.get('referer') || req.headers.get('origin') || 'https://portfolio-chatbot.com';
-    const title = req.headers.get('x-title') || 'Portfolio ChatBot';
+    const title = req.headers.get('x-title') || 'chat-completion-proxy';
 
     const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -83,8 +72,7 @@ serve(async (req: Request) => {
     let data: any = null;
     try {
       data = JSON.parse(text);
-    } catch (parseError) {
-      console.error(parseError);
+    } catch {
       data = { raw: text };
     }
 
