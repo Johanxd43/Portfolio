@@ -40,7 +40,9 @@ export function useOpenRouter() {
       }
 
       // Add user message to temporary history for the API call
+      // Prepend system prompt to messages to ensure compatibility
       const currentMessages = [
+        { role: 'system', content: SYSTEM_PROMPT },
         ...conversationHistory.current,
         { role: 'user', content: message }
       ];
@@ -48,16 +50,30 @@ export function useOpenRouter() {
       const { data, error } = await supabase.functions.invoke('chat-completion', {
         body: {
           messages: currentMessages,
+          // Sending systemPrompt separately just in case the backend uses it,
+          // but relying on the messages array is safer.
           systemPrompt: SYSTEM_PROMPT
         }
       });
 
       if (error) throw error;
 
-      const generatedText = data?.content || '';
+      // Parse response based on the Supabase AI generated code structure
+      // Expected: { status: 200, data: { choices: [...] } } OR { content: ... } from our previous version
+      let generatedText = '';
+
+      if (data?.content) {
+        generatedText = data.content;
+      } else if (data?.data?.choices?.[0]?.message?.content) {
+        generatedText = data.data.choices[0].message.content;
+      } else if (data?.choices?.[0]?.message?.content) {
+         // Direct OpenRouter response format
+         generatedText = data.choices[0].message.content;
+      }
 
       if (!generatedText || generatedText.length < 2) {
-         throw new Error('Empty response');
+         console.warn("Unexpected response structure:", data);
+         throw new Error('Empty or malformed response');
       }
 
       // Update history

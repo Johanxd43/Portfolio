@@ -1,64 +1,112 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from 'https://deno.land/std@0.201.0/http/server.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface ChatMessage {
+  role: string;
+  content: string;
 }
 
-serve(async (req) => {
+interface ChatRequest {
+  messages: ChatMessage[];
+  systemPrompt?: string;
+}
+
+console.info('chat-completion function starting');
+
+serve(async (req: Request) => {
+  // CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+      },
+    });
+  }
+
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed, use POST' }, 405);
+  }
+
+  let body: ChatRequest;
+  try {
+    body = await req.json();
+  } catch (err) {
+    console.error(err);
+    return jsonResponse({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const { messages, systemPrompt } = body || {};
+  if (!messages || !Array.isArray(messages)) {
+    return jsonResponse({ error: "'messages' is required and must be an array" }, 400);
+  }
+
+  const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+  if (!OPENROUTER_API_KEY) {
+    return jsonResponse({ error: 'Server misconfiguration: OPENROUTER_API_KEY not set' }, 500);
+  }
+
+  // Build payload for OpenRouter
+  // We use the messages array directly since the frontend now includes the system prompt there.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload: any = {
+    model: 'meta-llama/llama-3-8b-instruct:free',
+    messages,
+  };
+
+  // Only add system_prompt separately if it's NOT already in messages
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hasSystemMessage = messages.some((msg: any) => msg.role === 'system');
+  if (systemPrompt && !hasSystemMessage) {
+      payload.messages = [{ role: 'system', content: systemPrompt }, ...messages];
   }
 
   try {
-    const { messages, systemPrompt } = await req.json()
-    const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
+    const referer = req.headers.get('referer') || req.headers.get('origin') || 'https://portfolio-chatbot.com';
+    const title = req.headers.get('x-title') || 'Portfolio ChatBot';
 
-    if (!openRouterKey) {
-      throw new Error('Missing OPENROUTER_API_KEY')
-    }
-
-    // Construct the messages array for the LLM
-    // Ensure the system prompt is first
-    const conversation = [
-        { role: 'system', content: systemPrompt },
-        ...messages
-    ];
-
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openRouterKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://portfolio-chatbot.com',
-        'X-Title': 'Portfolio ChatBot',
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': referer,
+        'X-Title': title,
       },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-3-8b-instruct:free',
-        messages: conversation,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    })
+      body: JSON.stringify(payload),
+    });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenRouter Error:', errorText);
-        throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
+    const text = await orRes.text();
+    // try parse JSON
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error(parseError);
+      data = { raw: text };
     }
 
-    const data = await response.json()
-
-    // Extract the content
-    const content = data.choices[0]?.message?.content || "No response generated."
-
-    return new Response(JSON.stringify({ content }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return new Response(JSON.stringify({ status: orRes.status, data }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (err) {
+    console.error('OpenRouter request failed', err);
+    return jsonResponse({ error: 'Failed to contact OpenRouter', detail: String(err) }, 502);
   }
-})
+});
+
+function jsonResponse(payload: unknown, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+}
