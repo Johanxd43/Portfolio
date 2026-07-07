@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { debounce } from '../components/ChatBot/utils/debounce';
 import { z } from 'zod';
 
@@ -93,7 +93,6 @@ class Metrics {
 export class AnalyticsService {
   private static instance: AnalyticsService;
   private events: AnalyticsEvent[] = [];
-  private supabase!: SupabaseClient;
   private refreshInterval: number = 5 * 60 * 1000; // 5 minutos
   private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
   private refreshTimer: NodeJS.Timeout | null = null;
@@ -108,7 +107,6 @@ export class AnalyticsService {
     if (AnalyticsService.instance) {
       return AnalyticsService.instance;
     }
-    this.initializeSupabase();
     this.startRefreshTimer();
     this.initializeBatchProcessing();
     AnalyticsService.instance = this;
@@ -129,7 +127,7 @@ export class AnalyticsService {
   private async insertEventsBatch(batch: AnalyticsEvent[], attempt = 1): Promise<void> {
     const startTime = Date.now();
     try {
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('analytics_events')
         .insert(batch);
 
@@ -177,13 +175,6 @@ export class AnalyticsService {
     }, this.refreshInterval);
   }
 
-  private initializeSupabase() {
-    this.supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    );
-  }
-
   public cleanup() {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
@@ -213,13 +204,13 @@ export class AnalyticsService {
       if (cached) return cached;
 
       const [metrics, events] = await Promise.all([
-        this.supabase
+        supabase
           .from('analytics_metrics')
           .select('*')
           .order('timestamp', { ascending: false })
           .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
           .limit(1000),
-        this.supabase
+        supabase
           .from('analytics_events')
           .select('*')
           .order('timestamp', { ascending: false })
@@ -371,11 +362,6 @@ export class AnalyticsService {
   }
 
   async trackEvent(eventName: string, data: Record<string, unknown>) {
-    if (!this.supabase) {
-      console.error('Supabase client not initialized');
-      return;
-    }
-
     try {
       const event: AnalyticsEvent = {
         event_name: eventName,

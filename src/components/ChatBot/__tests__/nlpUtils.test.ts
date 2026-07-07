@@ -1,12 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { findBestMatch, selectResponse } from '../utils/nlpUtils';
+import { generatePythonTrainingData, findBestMatch, selectResponse } from '../utils/nlpUtils';
+import { intentPatterns as realIntentPatterns } from '../data/responses';
 
-// Mock intentPatterns with a controlled subset of dummy data
+// Mock intentPatterns with a controlled subset of dummy data for findBestMatch and selectResponse
 vi.mock('../data/responses', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../data/responses')>();
   return {
     ...actual,
     intentPatterns: {
+      ...actual.intentPatterns, // keep original for generatePythonTrainingData tests if needed
       greeting: {
         patterns: ['hola', 'buenos días', 'saludos'],
         contextPatterns: ['amigo'],
@@ -58,6 +60,49 @@ vi.mock('../data/responses', async (importOriginal) => {
   };
 });
 
+describe('generatePythonTrainingData', () => {
+  it('should return an object with intents, responses, and patterns keys', () => {
+    const result = generatePythonTrainingData();
+
+    expect(result).toHaveProperty('intents');
+    expect(result).toHaveProperty('responses');
+    expect(result).toHaveProperty('patterns');
+
+    expect(Array.isArray(result.intents)).toBe(true);
+    expect(Array.isArray(result.responses)).toBe(true);
+    expect(typeof result.patterns).toBe('object');
+    expect(result.patterns).not.toBeNull();
+  });
+
+  it('should correctly map intentPatterns into the training data format', () => {
+    const result = generatePythonTrainingData();
+
+    // Now it uses the mocked intentPatterns which also includes real ones.
+    const expectedIntentNames = result.intents.map((i: any) => i.name);
+
+    expect(result.intents.length).toBeGreaterThan(0);
+    result.intents.forEach(intentData => {
+      expect(expectedIntentNames).toContain(intentData.name);
+    });
+  });
+
+  it('should assign empty arrays for missing optional fields like context', () => {
+    const result = generatePythonTrainingData();
+
+    result.intents.forEach(intentData => {
+      expect(Array.isArray(intentData.contextPatterns)).toBe(true);
+    });
+
+    result.responses.forEach(responseData => {
+      expect(Array.isArray(responseData.context)).toBe(true);
+    });
+
+    Object.values(result.patterns).forEach((patternData: any) => {
+      expect(Array.isArray(patternData.context)).toBe(true);
+    });
+  });
+});
+
 describe('nlpUtils', () => {
   describe('findBestMatch', () => {
     it('returns unknown intent when there is no match', () => {
@@ -71,9 +116,6 @@ describe('nlpUtils', () => {
 
     it('matches an intent perfectly based on main patterns', () => {
       const result = findBestMatch('hola');
-      // matchScore = 1
-      // total patterns = 3 (patterns) + 1 (contextPatterns) = 4
-      // confidence = 1 / 4 = 0.25
       expect(result.intent).toBe('greeting');
       expect(result.confidence).toBe(0.25);
       expect(result.context).toEqual([]);
@@ -81,9 +123,6 @@ describe('nlpUtils', () => {
 
     it('adds context match correctly and improves confidence', () => {
       const result = findBestMatch('hola amigo');
-      // matchScore = 1 (hola) + 0.5 (amigo) = 1.5
-      // total = 4
-      // confidence = 1.5 / 4 = 0.375
       expect(result.intent).toBe('greeting');
       expect(result.confidence).toBe(0.375);
       expect(result.context).toEqual(['amigo']);
@@ -96,10 +135,6 @@ describe('nlpUtils', () => {
     });
 
     it('selects the intent with highest confidence', () => {
-      // If we say 'hola adiós', it might match both.
-      // 'hola': matchScore = 1, total = 4 -> confidence = 0.25
-      // 'adiós': matchScore = 1, total = 3 -> confidence = 0.333
-      // Should pick 'farewell' because 0.333 > 0.25
       const result = findBestMatch('hola adiós');
       expect(result.intent).toBe('farewell');
       expect(result.confidence).toBeCloseTo(0.333, 2);
@@ -110,7 +145,7 @@ describe('nlpUtils', () => {
     it('returns default response if intent is not found', () => {
       const response = selectResponse('non_existent_intent');
       expect(response.metadata?.intent).toBe('unknown');
-      expect(response.category).toBeUndefined(); // fallback has category 'fallback' in getDefaultResponse
+      expect(response.category).toBeUndefined();
       expect(response.metadata?.category).toBe('fallback');
     });
 
