@@ -1,0 +1,6 @@
+name = "portfolio-ai-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-03-20"
+
+[vars]
+ALLOWED_ORIGIN = "https://your-github-username.github.io" # Replace with actual GitHub Pages URL

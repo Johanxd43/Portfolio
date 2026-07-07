@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Minimize2, Bot, ThumbsUp, ThumbsDown, MessageCircle, Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useHuggingFaceChat } from './hooks/useHuggingFaceChat';
+import { useOpenRouterChat } from './hooks/useOpenRouterChat';
 import { useVoiceInput } from './hooks/useVoiceInput';
 import QuantumLoader from '../QuantumLoader';
 import AudioVisualizer from './AudioVisualizer';
@@ -24,7 +24,7 @@ const ChatBot: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate(); // <--- Inicialización del hook
-  const { processMessage, isProcessing, error, isInitialized, isUsingFallback } = useHuggingFaceChat();
+  const { processMessageStream, isProcessing, error, isInitialized } = useOpenRouterChat();
 
   const handleVoiceInput = useCallback((text: string) => {
     setInput(text);
@@ -104,30 +104,55 @@ const ChatBot: React.FC = () => {
       return;
     }
     try {
-      const response = await processMessage(content);
+      const botMessageId = (Date.now() + 1).toString();
       
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: response.response,
+      // Añadir mensaje bot vacío inicial para el streaming
+      const initialBotMessage: ChatMessage = {
+        id: botMessageId,
+        content: "",
         isUser: false,
         timestamp: new Date(),
-        suggestions: response.suggestions
       };
+      addMessage(initialBotMessage);
 
-      addMessage(botMessage);
-    } catch (error) {
-      console.error('Error generating response:', error);
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        content: "Lo siento, ha ocurrido un error. ¿Podrías intentarlo de nuevo?",
-        isUser: false,
-        timestamp: new Date(),
-        suggestions: [{ text: "Reintentar", action: "retry" }]
-      });
+      // Preparar el array de mensajes (excluyendo el welcome o transformándolo, y el actual ya está)
+      const apiMessages = [
+        ...messages.filter(m => m.id !== 'welcome').map(m => ({
+          role: m.isUser ? 'user' : 'assistant',
+          content: m.content
+        })),
+        { role: 'user', content: content.trim() }
+      ];
+
+      await processMessageStream(
+        apiMessages,
+        (chunk) => {
+          setMessages(prev => prev.map(msg =>
+            msg.id === botMessageId
+              ? { ...msg, content: msg.content + chunk }
+              : msg
+          ));
+        },
+        (suggestions) => {
+          setMessages(prev => prev.map(msg =>
+            msg.id === botMessageId
+              ? { ...msg, suggestions }
+              : msg
+          ));
+        },
+        (err) => {
+          console.error('Error in stream:', err);
+          setMessages(prev => prev.map(msg =>
+            msg.id === botMessageId
+              ? { ...msg, content: "Lo siento, ha ocurrido un error. ¿Podrías intentarlo de nuevo?", suggestions: [{ text: "Reintentar", action: "retry" }] }
+              : msg
+          ));
+        }
+      );
     } finally {
       setIsTyping(false);
     }
-  }, [addMessage, processMessage, navigate, setIsMinimized]);
+  }, [addMessage, processMessageStream, navigate, setIsMinimized, messages]);
 
   const handleSuggestionClick = useCallback((suggestion: { text: string; action: string }) => {
     // Añade estos console.log para depurar
@@ -162,7 +187,7 @@ const ChatBot: React.FC = () => {
     ));
   }, []);
 
-  if (!isInitialized && !isUsingFallback) {
+  if (!isInitialized) {
     return (
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -209,9 +234,6 @@ const ChatBot: React.FC = () => {
               </div>
               <div className="flex flex-col">
                 <h2 className="text-base font-semibold text-gray-100">Nova</h2>
-                {isUsingFallback && (
-                  <span className="text-[10px] text-gray-400">Modo básico</span>
-                )}
               </div>
             </div>
             <button
